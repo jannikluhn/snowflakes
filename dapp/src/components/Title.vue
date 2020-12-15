@@ -4,21 +4,21 @@
       <div class="container is-max-desktop">
         <div class="level">
           <div class="level-left">
-            <a href="#">
+            <router-link to="/">
               <h1 class="title">
                 Snowflake NFTs
               </h1>
               <h2 class="subtitle">
                 Winter on Ethereum
               </h2>
-            </a>
+            </router-link>
           </div>
           <div class="level-right">
-            <a href="#">
+            <router-link to="/">
               <figure class="image title-image">
                 <img src="../assets/snowflake.png">
               </figure>
-            </a>
+            </router-link>
           </div>
         </div>
       </div>
