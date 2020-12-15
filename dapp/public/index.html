@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <link rel="icon" type="image/png" href="<%= BASE_URL %>favicon.png" />
+    <link rel="stylesheet" href="https://cdn.materialdesignicons.com/5.3.45/css/materialdesignicons.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+    <script id="vertex-shader" src="<%= BASE_URL %>vertex_shader.glsl" type="x-shader/x-vertex"></script>
+    <script id="fragment-shader" src="<%= BASE_URL %>fragment_shader.glsl" type="x-shader/x-fragment"></script>
+    <script src="<%= BASE_URL %>wasm_exec.js"></script>
+    <script src="<%= BASE_URL %>wasm_worker.js"></script>
+    <title>Snowflakes</title>
+  </head>
+  <body>
+    <noscript>
+      <strong>Please enable JavaScript it to continue.</strong>
+    </noscript>
+    <div id="app"></div>
+    <!-- built files will be auto injected -->
+  </body>
+</html>
