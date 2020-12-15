@@ -14,5 +14,5 @@ in some features.
 The contracts can be found in `/contracts`, the website in `/dapp`, and the generator code in
 `/generator`.
 
-The contracts are deployed on Goerli at `0x0x3C6f2ad6727BeAD58B4FB68771aF2ca276f142A3`. The website
+The contracts are deployed on Goerli at `0x3C6f2ad6727BeAD58B4FB68771aF2ca276f142A3`. The website
 is hosted at [http://jannikluhn.github.io/snowflakes](http://jannikluhn.github.io/snowflakes).
