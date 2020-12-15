@@ -4,7 +4,7 @@
       <div class="container is-max-desktop">
         <div class="level">
           <div class="level-left">
-            <a href="/">
+            <a href="#">
               <h1 class="title">
                 Snowflake NFTs
               </h1>
@@ -14,7 +14,7 @@
             </a>
           </div>
           <div class="level-right">
-            <a href="/">
+            <a href="#">
               <figure class="image title-image">
                 <img src="../assets/snowflake.png">
               </figure>
