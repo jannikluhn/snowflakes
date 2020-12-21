@@ -2,17 +2,14 @@
   <div id="app">
     <Title />
     <div class="container is-max-desktop">
-      <router-view v-bind:wasmWorker="wasmWorker" v-bind:provider="provider" v-bind:contract="contract" v-bind:network="network" />
+      <router-view
+        v-bind:wasmWorker="wasmWorker"
+        v-bind:provider="provider"
+        v-bind:signer="signer"
+        v-bind:contracts="contracts"
+      />
     </div>
-    <footer class="footer">
-      <div class="container content has-text-right is-max-desktop">
-        <span class="icon is-large">
-          <a href="https://github.com/jannikluhn/snowflakes">
-            <i class="fab fa-3x fa-github"></i>
-          </a>
-        </span>
-      </div>
-    </footer>
+    <Footer />
   </div>
 </template>
 
@@ -20,23 +17,26 @@
 import { ethers } from 'ethers'
 
 import Title from './components/Title.vue'
+import Footer from './components/Footer.vue'
 
-import config from './config.js'
-import contractMetadata from './assets/Snowflake.json'
+import { infuraID, contractAddresses } from './config.js'
+import SnowflakeMetadata from './assets/Snowflake.json'
+import WaterMetadata from './assets/Water.json'
 
 export default {
   name: "App",
   components: {
     Title,
+    Footer,
   },
 
   data: function() {
     return {
       wasmWorker: null,
       provider: null,
-      contract: null,
+      signer: null,
+      contracts: null,
       network: null,
-      config: config,
     }
   },
 
@@ -49,17 +49,54 @@ export default {
     })
 
     if (this.window.ethereum) {
-      this.provider = new ethers.providers.Web3Provider(this.window.ethereum)
-      this.window.ethereum.enable()
-    } else {
-      this.provider = new ethers.getDefaultProvider("goerli", {"infura": config.infuraID})
-    }
-    this.contract = new ethers.Contract(config.contractAddress, contractMetadata.abi, this.provider)
+      this.window.ethereum.autoRefreshOnNetworkChange = false
+      this.window.ethereum.on('chainChanged', this.onChainChanged)
 
-    this.provider.getNetwork().then((network) => {
-      this.network = network.name
-    })
+      this.provider = new ethers.providers.Web3Provider(this.window.ethereum, "any")
+      this.window.ethereum.request({method: "eth_requestAccounts"}).then(() => {
+        this.signer = this.provider.getSigner()
+      }).catch(() => {
+        this.signer = null
+      })
+    } else {
+      this.provider = new ethers.getDefaultProvider("homestead", {"infura": infuraID})
+    }
+
+    this.updateNetwork()
   },
+
+  methods: {
+    onChainChanged() {
+      this.provider = new ethers.providers.Web3Provider(this.window.ethereum, "any")
+      this.signer = this.provider.getSigner()
+      this.contracts = null
+      this.updateNetwork()
+    },
+
+    updateNetwork() {
+      this.provider.getNetwork().then((network) => {
+        this.network = network
+        this.updateContracts()
+      })
+    },
+
+    updateContracts() {
+      if (!this.network) {
+        this.contracts = null
+        return
+      }
+      if (!(this.network.name in contractAddresses)) {
+        this.contracts = null
+        return
+      }
+
+      let addresses = contractAddresses[this.network.name]
+      this.contracts = {
+        snowflake: new ethers.Contract(addresses.snowflake, SnowflakeMetadata.abi, this.provider),
+        water: new ethers.Contract(addresses.water, WaterMetadata.abi, this.provider),
+      }
+    }
+  }
 }
 </script>
 

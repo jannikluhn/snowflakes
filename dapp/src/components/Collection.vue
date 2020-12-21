@@ -4,21 +4,19 @@
       <h1 class="title">
         Your Snowflakes
       </h1>
-      <div v-if="address" class="columns is-multiline">
+      <NoSignerMessage v-bind:signer="signer" />
+      <div v-if="signer" class="columns is-multiline">
         <div class="column is-one-quarter">
           <MintForm
             v-bind:provider="provider"
             v-bind:signer="signer"
-            v-bind:contract="contractWithSigner"
+            v-bind:contracts="contracts"
             v-on:minted="onMinted"
           />
         </div>
-        <div v-for="tokenID in tokenIDs" :key="tokenID.toString()" class="column is-one-quarter">
-          <SnowflakePreview v-bind:wasmWorker="wasmWorker" v-bind:tokenID="tokenID" />
+        <div v-for="snowflake in snowflakes" :key="snowflake.tokenID.toString()" class="column is-one-quarter">
+          <SnowflakePreview v-bind:wasmWorker="wasmWorker" v-bind:tokenID="snowflake.tokenID" v-bind:isMelted="snowflake.isMelted" />
         </div>
-      </div>
-      <div v-if="signerChecked && !address">
-        <NoSignerMessage />
       </div>
     </div>
   </section>
@@ -39,51 +37,56 @@ export default {
   props: [
     "wasmWorker",
     "provider",
-    "contract",
+    "signer",
+    "contracts",
   ],
   data() {
     return {
       "address": null,
-      "tokenIDs": [],
-      "contractWithSigner": null,
-      "signerChecked": false,
+      "snowflakes": [],
     }
   },
-
-  created() {
-    if (!this.provider.getSigner) {
-      this.signerChecked = true
-      return
-    }
-    this.signer = this.provider.getSigner()
-    this.contractWithSigner = this.contract.connect(this.signer)
-
-    this.signer.getAddress().then((address) => {
-      this.signerChecked = true
-      this.address = address
-      this.fetchTokens().catch(console.log)
-    }).catch((error) => {
-      console.log(error)
-      this.signerChecked = true
-      this.address = null
-    })
+  watch: {
+    signer: {
+      immediate: true,
+      handler() {
+        this.fetchTokens()
+      },
+    },
   },
 
   methods: {
     async fetchTokens() {
-      let n = await this.contract.balanceOf(this.address)
+      let snowflakes = []
+      this.snowflakes = snowflakes
+
+      if (!this.signer) {
+        return
+      }
+
+      let snowflakeContract = this.contracts.snowflake
+      let address = await this.signer.getAddress()
+      let n = await snowflakeContract.balanceOf(address)
       for (let i = n - 1; i >= 0; i--) {
-        let tokenID = await this.contract.tokenOfOwnerByIndex(this.address, i)
-        let isMolten = await this.contract.isMolten(tokenID)
-        if (isMolten) {
-          continue
+        if (this.snowflakes !== snowflakes) {
+          break
         }
-        this.tokenIDs.push(tokenID)
+
+        let tokenID = await snowflakeContract.tokenOfOwnerByIndex(address, i)
+        let isMelted = await snowflakeContract.isMelted(tokenID)
+        let snowflake = {
+          tokenID: tokenID,
+          isMelted: isMelted,
+        }
+        snowflakes.push(snowflake)
       }
     },
 
     onMinted(tokenID) {
-      this.tokenIDs.unshift(tokenID)
+      this.snowflakes.unshift({
+        tokenID: tokenID,
+        isMelted: false,
+      })
     },
   }
 }

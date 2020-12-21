@@ -20,7 +20,7 @@
         <div class="tile is-vertical">
           <ExplanationTile
             title="Ephemeral"
-            text="Life is short, especially for snowflakes. They will melt after a few weeks' time."
+            text="Life is short, especially for snowflakes. They will melt and turn into water after a few weeks' time."
           />
           <ExplanationTile
             title="Complex"

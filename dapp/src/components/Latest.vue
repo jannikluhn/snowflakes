@@ -4,9 +4,15 @@
       <h1 class="title">
         Latest Snowflakes
       </h1>
-      <div v-if="tokenIDs.length" class="columns is-multiline">
-        <div v-for="tokenID in tokenIDs" :key="tokenID.toString()" class="column is-one-quarter">
-          <SnowflakePreview v-bind:wasmWorker="wasmWorker" v-bind:tokenID="tokenID" />
+      <div v-if="numTokens > 0">
+        <div class="columns is-multiline">
+          <div v-for="snowflake in snowflakes" :key="snowflake.tokenID.toString()" class="column is-one-quarter">
+            <SnowflakePreview
+              v-bind:wasmWorker="wasmWorker"
+              v-bind:tokenID="snowflake.tokenID"
+              v-bind:isMelted="snowflake.isMelted"
+            />
+          </div>
         </div>
       </div>
       <div v-else>
@@ -19,8 +25,6 @@
 <script>
 import SnowflakePreview from './SnowflakePreview.vue'
 
-const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
-
 export default {
   name: "Latest",
   components: {
@@ -28,48 +32,53 @@ export default {
   },
   props: [
     "wasmWorker",
-    "contract",
+    "contracts",
   ],
   data() {
     return {
-      "tokenIDs": [],
-      "maxTokens": 8,
+      snowflakes: [],
+      tokensPerPage: 8,
+      numTokens: 0,
     }
   },
 
-  created() {
-    this.fetchLatestTokens().then(() => {
-      this.registerFilter().catch(console.log)
-    }).catch(console.log)
+  watch: {
+    contracts: {
+      immediate: true,
+      handler() {
+        this.numTokens = 0
+
+        if (this.contracts) {
+          this.contracts.snowflake.totalSupply().then((n) => {
+            this.numTokens = n
+            this.fetchLatestTokens()
+          })
+        }
+      },
+    }
   },
 
   methods: {
     async fetchLatestTokens() {
-      let n = await this.contract.totalSupply()
-      for (let i = n - 1; i >= 0 && this.tokenIDs.length < this.maxTokens; i--) {
-        let tokenID = await this.contract.tokenByIndex(i)
-        let isMolten = await this.contract.isMolten(tokenID)
-        if (isMolten) {
-          continue
+      let snowflakeContract = this.contracts.snowflake
+
+      let snowflakes = []
+      this.snowflakes = snowflakes
+
+      let n = await snowflakeContract.totalSupply()
+
+      for (let i = n - 1; i >= 0 && this.snowflakes.length < this.tokensPerPage; i--) {
+        if (this.snowflakes !== snowflakes) {
+          break
         }
-        this.tokenIDs.push(tokenID)
+        let tokenID = await snowflakeContract.tokenByIndex(i)
+        let isMelted = await snowflakeContract.isMelted(tokenID)
+        snowflakes.push({
+          tokenID: tokenID,
+          isMelted: isMelted,
+        })
       }
     },
-
-    async registerFilter() {
-      let filter = this.contract.filters.Transfer(ZERO_ADDRESS, null, null)
-      let first = true;
-      this.contract.on(filter, (from, to, tokenID) => {
-        if (first) {
-          first = false
-          return
-        }
-        this.tokenIDs.unshift(tokenID)
-        while (this.tokenIDs.length > this.maxTokens) {
-          this.tokenIDs.pop()
-        }
-      })
-    }
   }
 }
 </script>

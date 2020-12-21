@@ -14,11 +14,15 @@
       </tr>
       <tr>
       <th>Mint Date</th>
-      <td>{{ mintingTimeFormatted }}</td>
+      <td>{{ mintTimeFormatted }}</td>
       </tr>
       <tr>
       <th>Melt Date</th>
-      <td>{{ meltingTimeFormatted }}</td>
+      <td>{{ meltTimeFormatted }}</td>
+      </tr>
+      <tr>
+      <th>Melted</th>
+      <td>{{ isMelted ? "Yes" : "No" }}</td>
       </tr>
     </table>
   </section>
@@ -31,23 +35,24 @@ import { ethers } from 'ethers'
 export default {
   name: "MetadataTable",
   props: [
-    "contract",
+    "contracts",
     "tokenID",
   ],
   data() {
     return {
       owner: null,
-      mintingTime: null,
-      meltingTime: null,
+      mintTime: null,
+      meltTime: null,
+      isMelted: null,
     }
   },
   computed: {
-    mintingTimeFormatted() {
-      let d = new Date(this.mintingTime * 1000)
+    mintTimeFormatted() {
+      let d = new Date(this.mintTime * 1000)
       return dateformat(d)
     },
-    meltingTimeFormatted() {
-      let d = new Date(this.meltingTime * 1000)
+    meltTimeFormatted() {
+      let d = new Date(this.meltTime * 1000)
       return dateformat(d)
     },
     tokenIDHex() {
@@ -62,20 +67,27 @@ export default {
     tokenID() {
       this.update()
     },
+    contracts() {
+      this.update()
+    },
   },
   methods: {
     update() {
-      this.contract.ownerOf(this.tokenID).then((owner) => {
+      this.contracts.snowflake.ownerOf(this.tokenID).then((owner) => {
         this.owner = owner
-      }).catch(console.log)
+      })
 
-      this.contract.mintingTime(this.tokenID).then((mintingTime) => {
-        this.mintingTime = mintingTime.toNumber()
-      }).catch(console.log)
+      this.contracts.snowflake.mintTime(this.tokenID).then((mintTime) => {
+        this.mintTime = mintTime.toNumber()
+      })
 
-      this.contract.meltingTime(this.tokenID).then((meltingTime) => {
-        this.meltingTime = meltingTime.toNumber()
-      }).catch(console.log)
+      this.contracts.snowflake.getMeltTime(this.tokenID).then((meltTime) => {
+        this.meltTime = meltTime.toNumber()
+      })
+
+      this.contracts.snowflake.isMelted(this.tokenID).then((isMelted) => {
+        this.isMelted = isMelted
+      })
     }
   },
 }

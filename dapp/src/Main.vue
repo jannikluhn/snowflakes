@@ -1,35 +1,37 @@
 <template>
   <div>
     <Explanation />
-    <NetworkErrorMessage v-if="!correctNetwork" v-bind:network="network" />
-    <ContractComponents v-else v-bind:wasmWorker="wasmWorker" v-bind:provider="provider" v-bind:contract="contract" />
+    <WrongNetworkMessage
+      v-if="!contracts"
+      v-bind:provider="provider"
+    />
+    <ContractComponents
+      v-if="contracts"
+      v-bind:wasmWorker="wasmWorker"
+      v-bind:provider="provider"
+      v-bind:signer="signer"
+      v-bind:contracts="contracts"
+    />
   </div>
 </template>
 
 <script>
-import config from './config.js'
-
 import Explanation from './components/Explanation.vue'
 import ContractComponents from './components/ContractComponents.vue'
-import NetworkErrorMessage from './components/NetworkErrorMessage.vue'
+import WrongNetworkMessage from './components/WrongNetworkMessage.vue'
 
 export default {
   name: 'Main',
   components: {
     Explanation,
     ContractComponents,
-    NetworkErrorMessage,
+    WrongNetworkMessage,
   },
   props: [
     "wasmWorker",
     "provider",
-    "contract",
-    "network",
+    "signer",
+    "contracts",
   ],
-  computed: {
-    correctNetwork() {
-      return this.network == config.network
-    }
-  },
 }
 </script>

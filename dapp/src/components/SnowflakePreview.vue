@@ -6,7 +6,7 @@
       </p>
     </header>
     <div class="card-image">
-      <SnowflakeCanvas size="20" v-bind:tokenID="tokenID" v-bind:wasmWorker="wasmWorker" />
+      <SnowflakeCanvas size="20" v-bind:wasmWorker="wasmWorker" v-bind:tokenID="tokenID" v-bind:isMelted="isMelted" />
     </div>
     <div class="card-footer">
       <a :href="'#/snowflake/' + tokenIDHex" class="card-footer-item">Details</a>
@@ -25,8 +25,9 @@ export default {
     SnowflakeCanvas,
   },
   props: [
-    "tokenID",
     "wasmWorker",
+    "tokenID",
+    "isMelted",
   ],
   computed: {
     tokenIDHex() {

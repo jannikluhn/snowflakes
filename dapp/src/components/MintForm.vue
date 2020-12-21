@@ -28,7 +28,7 @@ export default {
   props: [
     "provider",
     "signer",
-    "contract",
+    "contracts",
   ],
   data() {
     return {
@@ -39,11 +39,12 @@ export default {
   methods: {
     mint() {
       this.waitingForTx = true
-      this.contract.mint().then((tx) => {
+      let contract = this.contracts.snowflake.connect(this.signer)
+      contract.mint().then((tx) => {
         this.provider.waitForTransaction(tx.hash).then((receipt) => {
           this.waitingForTx = false
           let log = receipt.logs[0]
-          let event = this.contract.interface.parseLog(log)
+          let event = contract.interface.parseLog(log)
           let mintedTokenID = event.args.tokenId
           this.$emit("minted", mintedTokenID)
         }).catch((reason) => {
